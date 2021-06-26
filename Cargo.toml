@@ -1,0 +1,19 @@
+[package]
+name = "dfu-libusb"
+version = "0.1.0"
+authors = ["Cecile Tonglet <cecile.tonglet@cecton.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { version = "1", optional = true }
+dfu-core = { version = "0.1", features = ["std"] }
+indicatif = { version = "0.16", optional = true }
+libusb1-sys = "0.5"
+rusb = "0.8"
+structopt = { version = "0.3", optional = true }
+thiserror = "1"
+
+[features]
+cli = ["anyhow", "indicatif", "structopt"]
