@@ -1,8 +1,6 @@
-mod lib;
-
 #[cfg(feature = "cli")]
 pub mod cli {
-    use crate::lib::*;
+    use dfu_libusb::*;
     use anyhow::{Context, Result};
     use std::convert::TryFrom;
     use std::io;
