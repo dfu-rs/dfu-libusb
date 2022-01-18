@@ -194,9 +194,9 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
         timeout: std::time::Duration,
     ) -> Option<Result<dfu_core::functional_descriptor::FunctionalDescriptor, Error>> {
         macro_rules! find_func_desc {
-            ($maybe_data:expr) => {{
-                if let Some(func_desc) = $maybe_data
-                    .and_then(dfu_core::functional_descriptor::FunctionalDescriptor::from_bytes)
+            ($data:expr) => {{
+                if let Some(func_desc) =
+                    dfu_core::functional_descriptor::FunctionalDescriptor::from_bytes($data)
                 {
                     return Some(func_desc.map_err(Into::into));
                 }
@@ -218,7 +218,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
             &mut buffer,
             timeout,
         ) {
-            Ok(n) => find_func_desc!(Some(&buffer[..n])),
+            Ok(n) => find_func_desc!(&buffer[..n]),
             Err(err) => return Some(Err(err.into())),
         }
 
