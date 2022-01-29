@@ -11,19 +11,13 @@ documentation = "https://docs.rs/dfu-libusb"
 readme = "README.md"
 keywords = ["dfu", "libusb"]
 
-[[bin]]
-name = "dfu"
-path = "src/main.rs"
-
 [dependencies]
-anyhow = { version = "1", optional = true }
-dfu-core = { version = "0.1", features = ["std"] }
-indicatif = { version = "0.16", optional = true }
+dfu-core = { version = "0.2", features = ["std"] }
 libusb1-sys = "0.6"
 rusb = "0.9"
-structopt = { version = "0.3", optional = true }
 thiserror = "1"
 
-[features]
-default = ["cli"]
-cli = ["anyhow", "indicatif", "structopt"]
+[dev-dependencies]
+anyhow = "1"
+indicatif = "0.16"
+structopt = "0.3"

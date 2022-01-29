@@ -12,9 +12,8 @@ pub enum Error {
     Dfu(#[from] dfu_core::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
-    // TODO: it's kinda annoying to have a lifetime in the error
     #[error("Could not parse memory layout: {0}")]
-    MemoryLayout(String),
+    MemoryLayout(dfu_core::memory_layout::Error),
     #[error("rusb: {0}")]
     LibUsb(#[from] rusb::Error),
     #[error("The device has no languages.")]
@@ -122,7 +121,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
         handle.set_alternate_setting(iface, alt)?;
         let device_descriptor = device.device_descriptor()?;
         let languages = handle.read_languages(timeout)?;
-        let lang = languages.iter().next().ok_or(Error::MissingLanguage)?;
+        let lang = languages.get(0).ok_or(Error::MissingLanguage)?;
 
         for index in 0..device_descriptor.num_configurations() {
             let config_descriptor = device.config_descriptor(index)?;
@@ -141,7 +140,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
                 .rsplit_once('/')
                 .ok_or(Error::InvalidInterfaceString)?;
             let memory_layout = dfu_core::memory_layout::MemoryLayout::try_from(memory_layout)
-                .map_err(|err| Error::MemoryLayout(err.to_string()))?;
+                .map_err(Error::MemoryLayout)?;
             let (_rest, address) = rest.rsplit_once('/').ok_or(Error::InvalidInterfaceString)?;
             let address = address
                 .strip_prefix("0x")
