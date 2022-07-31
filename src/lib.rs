@@ -204,7 +204,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
 
         find_func_desc!(config.extra());
 
-        for if_desc in config.interfaces().map(|x| x.descriptors()).flatten() {
+        for if_desc in config.interfaces().flat_map(|x| x.descriptors()) {
             find_func_desc!(if_desc.extra());
         }
 
