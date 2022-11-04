@@ -113,10 +113,19 @@ impl<C: rusb::UsbContext> dfu_core::DfuIo for DfuLibusb<C> {
 
 impl<C: rusb::UsbContext> DfuLibusb<C> {
     pub fn open(context: &C, vid: u16, pid: u16, iface: u8, alt: u8) -> Result<Dfu<C>, Error> {
+        let (device, handle) = Self::open_device(context, vid, pid)?;
+        Self::from_usb_device(device, handle, iface, alt)
+    }
+
+    pub fn from_usb_device(
+        device: rusb::Device<C>,
+        mut handle: rusb::DeviceHandle<C>,
+        iface: u8,
+        alt: u8,
+    ) -> Result<Dfu<C>, Error> {
         use std::convert::TryFrom;
 
         let timeout = std::time::Duration::from_secs(3);
-        let (device, mut handle) = Self::open_device(context, vid, pid)?;
         handle.claim_interface(iface)?;
         handle.set_alternate_setting(iface, alt)?;
         let device_descriptor = device.device_descriptor()?;
