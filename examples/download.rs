@@ -10,6 +10,14 @@ pub struct Cli {
     /// Path to the firmware file to write to the device.
     path: PathBuf,
 
+    /// Wait for the device to appear.
+    #[clap(short, long)]
+    wait: bool,
+
+    /// Reset after download.
+    #[clap(short, long)]
+    reset: bool,
+
     /// Specify Vendor/Product ID(s) of DFU device.
     #[clap(
         long,
@@ -35,6 +43,8 @@ impl Cli {
     pub fn run(self) -> Result<()> {
         let Cli {
             path,
+            wait,
+            reset,
             device,
             intf,
             alt,
@@ -54,6 +64,26 @@ impl Cli {
             .context("the firmware file is too big")?;
         file.seek(io::SeekFrom::Start(0))?;
 
+        let mut device: Dfu<rusb::Context> = match DfuLibusb::open(&context, vid, pid, intf, alt) {
+            Err(Error::CouldNotOpenDevice) if wait => {
+                let bar = indicatif::ProgressBar::new_spinner();
+                bar.set_message("Waiting for device");
+
+                loop {
+                    std::thread::sleep(std::time::Duration::from_millis(250));
+                    match DfuLibusb::open(&context, vid, pid, intf, alt) {
+                        Err(Error::CouldNotOpenDevice) => bar.tick(),
+                        r => {
+                            bar.finish();
+                            break r;
+                        }
+                    }
+                }
+            }
+            r => r,
+        }
+        .context("could not open device")?;
+
         let bar = indicatif::ProgressBar::new(file_size as u64);
         bar.set_style(
             indicatif::ProgressStyle::default_bar()
@@ -64,20 +94,35 @@ impl Cli {
                 .progress_chars("#>-"),
         );
 
-        let mut device: Dfu<rusb::Context> =
-            DfuLibusb::open(&context, vid, pid, intf, alt).context("could not open device")?;
         device.with_progress({
             let bar = bar.clone();
             move |count| {
                 bar.inc(count as u64);
+                if bar.position() == file_size as u64 {
+                    bar.finish();
+                }
             }
         });
 
-        device
-            .download(file, file_size)
-            .context("could not write firmware to the device")?;
+        match device.download(file, file_size) {
+            Ok(_) => (),
+            Err(Error::LibUsb(..)) if bar.is_finished() => {
+                println!("USB error after upload; Device reset itself?");
+                return Ok(());
+            }
+            e => return e.context("could not write firmware to the device"),
+        }
 
-        bar.finish();
+        if reset {
+            // Detach isn't strictly meant to be sent after a download, however u-boot in
+            // particular will only switch to the downloaded firmware if it saw a detach before
+            // a usb reset. So send a detach blindly...
+            //
+            // This matches the behaviour of dfu-util so should be safe
+            let _ = device.detach();
+            println!("Resetting device");
+            device.usb_reset()?;
+        }
 
         Ok(())
     }

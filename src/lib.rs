@@ -12,8 +12,6 @@ pub enum Error {
     Dfu(#[from] dfu_core::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
-    #[error("Could not parse memory layout: {0}")]
-    MemoryLayout(dfu_core::memory_layout::Error),
     #[error("rusb: {0}")]
     LibUsb(#[from] rusb::Error),
     #[error("The device has no languages.")]
@@ -22,10 +20,6 @@ pub enum Error {
     InvalidInterface,
     #[error("Could not find alt interface.")]
     InvalidAlt,
-    #[error("Could not parse interface string.")]
-    InvalidInterfaceString,
-    #[error("Could not parse address.")]
-    InvalidAddress,
     #[error("Could not parse functional descriptor: {0}")]
     FunctionalDescriptor(#[from] dfu_core::functional_descriptor::Error),
     #[error("No DFU capable device found.")]
@@ -124,8 +118,6 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
         iface: u8,
         alt: u8,
     ) -> Result<Dfu<C>, Error> {
-        use std::convert::TryFrom;
-
         let timeout = std::time::Duration::from_secs(3);
         handle.claim_interface(iface)?;
         handle.set_alternate_setting(iface, alt)?;
@@ -136,35 +128,25 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
         for index in 0..device_descriptor.num_configurations() {
             let config_descriptor = device.config_descriptor(index)?;
 
-            let interface = config_descriptor
-                .interfaces()
-                .find(|x| x.number() == iface)
-                .ok_or(Error::InvalidInterface)?;
-            let iface_desc = interface
-                .descriptors()
-                .find(|x| x.setting_number() == alt)
-                .ok_or(Error::InvalidAlt)?;
-            let interface_string = handle.read_interface_string(*lang, &iface_desc, timeout)?;
-
-            let (rest, memory_layout) = interface_string
-                .rsplit_once('/')
-                .ok_or(Error::InvalidInterfaceString)?;
-            let memory_layout = dfu_core::memory_layout::MemoryLayout::try_from(memory_layout)
-                .map_err(Error::MemoryLayout)?;
-            let (_rest, address) = rest.rsplit_once('/').ok_or(Error::InvalidInterfaceString)?;
-            let address = address
-                .strip_prefix("0x")
-                .and_then(|s| u32::from_str_radix(s, 16).ok())
-                .ok_or(Error::InvalidAddress)?;
-            let protocol = dfu_core::DfuProtocol::Dfuse {
-                address,
-                memory_layout,
-            };
-
             if let Some(functional_descriptor) =
                 Self::find_functional_descriptor(&handle, &config_descriptor, timeout)
                     .transpose()?
             {
+                let interface = config_descriptor
+                    .interfaces()
+                    .find(|x| x.number() == iface)
+                    .ok_or(Error::InvalidInterface)?;
+                let iface_desc = interface
+                    .descriptors()
+                    .find(|x| x.setting_number() == alt)
+                    .ok_or(Error::InvalidAlt)?;
+
+                let interface_string = handle.read_interface_string(*lang, &iface_desc, timeout)?;
+                let protocol = dfu_core::DfuProtocol::new(
+                    &interface_string,
+                    functional_descriptor.dfu_version,
+                )?;
+
                 let io = DfuLibusb {
                     usb: RefCell::new(handle),
                     protocol,
