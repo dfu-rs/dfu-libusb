@@ -34,7 +34,7 @@ pub enum Error {
 
 pub struct DfuLibusb<C: rusb::UsbContext> {
     usb: RefCell<rusb::DeviceHandle<C>>,
-    memory_layout: dfu_core::memory_layout::MemoryLayout,
+    protocol: dfu_core::DfuProtocol<dfu_core::memory_layout::MemoryLayout>,
     timeout: std::time::Duration,
     iface: u16,
     functional_descriptor: dfu_core::functional_descriptor::FunctionalDescriptor,
@@ -46,6 +46,7 @@ impl<C: rusb::UsbContext> dfu_core::DfuIo for DfuLibusb<C> {
     type Write = usize;
     type Reset = ();
     type Error = Error;
+    type MemoryLayout = dfu_core::memory_layout::MemoryLayout;
 
     #[allow(unused_variables)]
     fn read_control(
@@ -102,8 +103,8 @@ impl<C: rusb::UsbContext> dfu_core::DfuIo for DfuLibusb<C> {
         Ok(self.usb.borrow_mut().reset()?)
     }
 
-    fn memory_layout(&self) -> &dfu_core::memory_layout::mem {
-        &self.memory_layout
+    fn protocol(&self) -> &dfu_core::DfuProtocol<Self::MemoryLayout> {
+        &self.protocol
     }
 
     fn functional_descriptor(&self) -> &dfu_core::functional_descriptor::FunctionalDescriptor {
@@ -155,6 +156,10 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
                 .strip_prefix("0x")
                 .and_then(|s| u32::from_str_radix(s, 16).ok())
                 .ok_or(Error::InvalidAddress)?;
+            let protocol = dfu_core::DfuProtocol::Dfuse {
+                address,
+                memory_layout,
+            };
 
             if let Some(functional_descriptor) =
                 Self::find_functional_descriptor(&handle, &config_descriptor, timeout)
@@ -162,14 +167,14 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
             {
                 let io = DfuLibusb {
                     usb: RefCell::new(handle),
-                    memory_layout,
+                    protocol,
                     timeout,
                     iface: iface as u16,
                     functional_descriptor,
                     marker: marker::PhantomData,
                 };
 
-                return Ok(dfu_core::sync::DfuSync::new(io, address));
+                return Ok(dfu_core::sync::DfuSync::new(io));
             }
         }
 
