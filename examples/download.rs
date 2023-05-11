@@ -37,6 +37,10 @@ pub struct Cli {
     /// Enable verbose logs.
     #[clap(long, short)]
     verbose: bool,
+
+    /// Override start address (e.g. 0x0800C000)
+    #[clap(long, short, value_parser=Self::parse_address, name="address")]
+    override_address: Option<u32>,
 }
 
 impl Cli {
@@ -49,6 +53,7 @@ impl Cli {
             intf,
             alt,
             verbose,
+            override_address,
         } = self;
         let log_level = if verbose {
             simplelog::LevelFilter::Trace
@@ -104,6 +109,10 @@ impl Cli {
             }
         });
 
+        if let Some(address) = override_address {
+            device.override_address(address);
+        }
+
         match device.download(file, file_size) {
             Ok(_) => (),
             Err(Error::LibUsb(..)) if bar.is_finished() => {
@@ -135,6 +144,14 @@ impl Cli {
         let pid = u16::from_str_radix(pid, 16).context("could not parse PID")?;
 
         Ok((vid, pid))
+    }
+
+    pub fn parse_address(s: &str) -> Result<u32> {
+        if s.to_ascii_lowercase().starts_with("0x") {
+            u32::from_str_radix(&s[2..], 16).context("could not parse override address")
+        } else {
+            u32::from_str_radix(s, 10).context("could not parse override address")
+        }
     }
 }
 
