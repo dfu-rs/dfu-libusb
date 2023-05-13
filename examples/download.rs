@@ -150,7 +150,7 @@ impl Cli {
         if s.to_ascii_lowercase().starts_with("0x") {
             u32::from_str_radix(&s[2..], 16).context("could not parse override address")
         } else {
-            u32::from_str_radix(s, 10).context("could not parse override address")
+            s.parse().context("could not parse override address")
         }
     }
 }
