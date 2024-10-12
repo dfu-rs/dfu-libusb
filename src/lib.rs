@@ -123,7 +123,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
         handle.set_alternate_setting(iface, alt)?;
         let device_descriptor = device.device_descriptor()?;
         let languages = handle.read_languages(timeout)?;
-        let lang = languages.get(0).ok_or(Error::MissingLanguage)?;
+        let lang = languages.first().ok_or(Error::MissingLanguage)?;
 
         for index in 0..device_descriptor.num_configurations() {
             let config_descriptor = device.config_descriptor(index)?;
