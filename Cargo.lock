@@ -122,7 +122,6 @@ dependencies = [
  "clap",
  "dfu-core",
  "indicatif",
- "libusb1-sys",
  "rusb",
  "simplelog",
  "thiserror",

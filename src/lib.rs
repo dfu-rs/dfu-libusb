@@ -51,7 +51,7 @@ impl<C: rusb::UsbContext> dfu_core::DfuIo for DfuLibusb<C> {
         buffer: &mut [u8],
     ) -> Result<Self::Read, Self::Error> {
         // TODO: do or do not? there is no try
-        let request_type = request_type | libusb1_sys::constants::LIBUSB_ENDPOINT_IN;
+        let request_type = request_type | rusb::constants::LIBUSB_ENDPOINT_IN;
         let res = self.usb.borrow().read_control(
             request_type,
             request,
@@ -123,7 +123,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
         handle.set_alternate_setting(iface, alt)?;
         let device_descriptor = device.device_descriptor()?;
         let languages = handle.read_languages(timeout)?;
-        let lang = languages.get(0).ok_or(Error::MissingLanguage)?;
+        let lang = languages.first().ok_or(Error::MissingLanguage)?;
 
         for index in 0..device_descriptor.num_configurations() {
             let config_descriptor = device.config_descriptor(index)?;
@@ -206,8 +206,8 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
 
         let mut buffer = [0x00; 9];
         match handle.read_control(
-            libusb1_sys::constants::LIBUSB_ENDPOINT_IN,
-            libusb1_sys::constants::LIBUSB_REQUEST_GET_DESCRIPTOR,
+            rusb::constants::LIBUSB_ENDPOINT_IN,
+            rusb::constants::LIBUSB_REQUEST_GET_DESCRIPTOR,
             0x2100,
             0,
             &mut buffer,
