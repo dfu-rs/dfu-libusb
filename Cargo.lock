@@ -103,9 +103,9 @@ dependencies = [
 
 [[package]]
 name = "dfu-core"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c1336c04109285c67da20d2cbb60ad732719ef71739a6e03a42b0afcd460376"
+checksum = "c5867e35cc12d5e5c775f16e10e5cd135f96756cc07bb4a715fb863f25001bbf"
 dependencies = [
  "bytes",
  "displaydoc",
