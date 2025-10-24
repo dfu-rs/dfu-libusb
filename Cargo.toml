@@ -12,7 +12,7 @@ readme = "README.md"
 keywords = ["dfu", "libusb"]
 
 [dependencies]
-dfu-core = { version = "0.7", features = ["std"] }
+dfu-core = { version = "0.8", features = ["std"] }
 rusb = "0.9"
 thiserror = "1"
 
