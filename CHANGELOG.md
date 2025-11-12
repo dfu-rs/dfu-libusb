@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## v0.5.5
+
+- chore: Bump to dfu-core 0.9
+
 ## v0.5.4
 
 - chore: Bump to dfu-core 0.8
