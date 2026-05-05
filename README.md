@@ -31,19 +31,22 @@ access via libusb.
 
 ```toml
 [dependencies]
-dfu-libusb = "0.5"
+dfu-libusb = "0.6"
 ```
 
 ```rust,no_run
 use rusb::Context;
 use dfu_libusb::DfuLibusb;
 
-let context = Context::new()?;
-let firmware = std::fs::read("firmware.bin")?;
-let size = firmware.len() as u32;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let context = Context::new()?;
+    let firmware = std::fs::read("firmware.bin")?;
+    let size = firmware.len() as u32;
 
-let mut dfu = DfuLibusb::open(&context, 0x1234, 0x5678, 0, 0)?;
-dfu.download(std::io::Cursor::new(firmware), size)?;
+    let mut dfu = DfuLibusb::open(&context, 0x1234, 0x5678, 0, 0)?;
+    dfu.download(std::io::Cursor::new(firmware), size)?;
+    Ok(())
+}
 ```
 
 See the [`download`](examples/download.rs) example for a more complete program
