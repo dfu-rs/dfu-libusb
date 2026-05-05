@@ -101,7 +101,7 @@ impl<C: rusb::UsbContext> dfu_core::DfuIo for DfuLibusb<C> {
         // releasing here (rather than relying on DeviceHandle's Drop) makes
         // the intent clear and ensures the interface is released before the
         // reset call.
-        let mut handle = self.usb.into_inner();
+        let handle = self.usb.into_inner();
         handle.release_interface(self.iface as u8)?;
         Ok(handle.reset()?)
     }
@@ -123,7 +123,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
 
     pub fn from_usb_device(
         device: rusb::Device<C>,
-        mut handle: rusb::DeviceHandle<C>,
+        handle: rusb::DeviceHandle<C>,
         iface: u8,
         alt: u8,
     ) -> Result<Dfu<C>, Error> {

@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-05
+
 ### Fixed
 
 - Release USB interface before reset to avoid failures on macOS (#19)
+
+### Changed
+
+- Bump MSRV to 1.71 and edition to 2021
+- Upgrade thiserror to 2.0
+- Upgrade indicatif to 0.18
+- Upgrade clap to 4.6
 
 ## [0.5.5] - 2025-11-12
 
@@ -80,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/dfu-rs/dfu-libusb/compare/v0.5.5...HEAD
+[Unreleased]: https://github.com/dfu-rs/dfu-libusb/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/dfu-rs/dfu-libusb/compare/v0.5.5...v0.6.0
 [0.5.5]: https://github.com/dfu-rs/dfu-libusb/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/dfu-rs/dfu-libusb/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/dfu-rs/dfu-libusb/compare/v0.5.2...v0.5.3
