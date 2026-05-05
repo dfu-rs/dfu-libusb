@@ -2,14 +2,16 @@
 name = "dfu-libusb"
 version = "0.5.5"
 authors = ["Cecile Tonglet <cecile.tonglet@cecton.com>"]
-edition = "2018"
+edition = "2021"
+rust-version = "1.71"
 license = "MIT OR Apache-2.0"
 description = "Implementation of DFU using libusb and dfu-core"
 repository = "https://github.com/dfu-rs/dfu-libusb"
 homepage = "https://github.com/dfu-rs/dfu-libusb"
 documentation = "https://docs.rs/dfu-libusb"
 readme = "README.md"
-keywords = ["dfu", "libusb"]
+keywords = ["dfu", "libusb", "firmware", "usb", "embedded"]
+categories = ["embedded", "hardware-support"]
 
 [dependencies]
 dfu-core = { version = "0.11", features = ["std"] }
