@@ -22,7 +22,8 @@ pub struct Cli {
     #[clap(
         long,
         short,
-        parse(try_from_str = Self::parse_vid_pid), name = "vendor>:<product",
+        value_parser = Self::parse_vid_pid,
+        name = "vendor>:<product",
     )]
     device: (u16, u16),
 
@@ -39,7 +40,7 @@ pub struct Cli {
     verbose: bool,
 
     /// Override start address (e.g. 0x0800C000)
-    #[clap(long, short, value_parser=Self::parse_address, name="address")]
+    #[clap(long, short, value_parser = Self::parse_address, name = "address")]
     override_address: Option<u32>,
 }
 
@@ -158,5 +159,5 @@ impl Cli {
 }
 
 fn main() -> Result<()> {
-    <Cli as clap::Parser>::from_args().run()
+    <Cli as clap::Parser>::parse().run()
 }
