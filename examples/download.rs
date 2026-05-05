@@ -123,7 +123,7 @@ impl Cli {
         };
 
         if reset {
-            if let Some(mut d) = device {
+            if let Some(d) = device {
                 // Detach isn't strictly meant to be sent after a download, however u-boot in
                 // particular will only switch to the downloaded firmware if it saw a detach before
                 // a usb reset. So send a detach blindly...
