@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::marker;
 use thiserror::Error;
 
-pub type Dfu<C> = dfu_core::sync::DfuSync<DfuLibusb<C>, Error>;
+pub type Dfu<C> = dfu_core::synchronous::DfuSync<DfuLibusb<C>, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -93,8 +93,15 @@ impl<C: rusb::UsbContext> dfu_core::DfuIo for DfuLibusb<C> {
         Ok(res?)
     }
 
-    fn usb_reset(&self) -> Result<Self::Reset, Self::Error> {
-        Ok(self.usb.borrow_mut().reset()?)
+    fn usb_reset(self) -> Result<Self::Reset, Self::Error> {
+        // Release the interface before resetting the device. On macOS,
+        // libusb's reset fails if an interface is still claimed. Explicitly
+        // releasing here (rather than relying on DeviceHandle's Drop) makes
+        // the intent clear and ensures the interface is released before the
+        // reset call.
+        let mut handle = self.usb.into_inner();
+        handle.release_interface(self.iface as u8)?;
+        Ok(handle.reset()?)
     }
 
     fn protocol(&self) -> &dfu_core::DfuProtocol<Self::MemoryLayout> {
@@ -156,7 +163,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
                     marker: marker::PhantomData,
                 };
 
-                return Ok(dfu_core::sync::DfuSync::new(io));
+                return Ok(Dfu::new(io));
             }
         }
 
