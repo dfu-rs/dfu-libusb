@@ -113,24 +113,26 @@ impl Cli {
             device.override_address(address);
         }
 
-        match device.download(file, file_size) {
-            Ok(_) => (),
+        let device = match device.download(file, file_size) {
+            Ok(d) => d,
             Err(Error::LibUsb(..)) if bar.is_finished() => {
                 println!("USB error after upload; Device reset itself?");
                 return Ok(());
             }
-            e => return e.context("could not write firmware to the device"),
-        }
+            Err(e) => return Err(e).context("could not write firmware to the device"),
+        };
 
         if reset {
-            // Detach isn't strictly meant to be sent after a download, however u-boot in
-            // particular will only switch to the downloaded firmware if it saw a detach before
-            // a usb reset. So send a detach blindly...
-            //
-            // This matches the behaviour of dfu-util so should be safe
-            let _ = device.detach();
-            println!("Resetting device");
-            device.usb_reset()?;
+            if let Some(mut d) = device {
+                // Detach isn't strictly meant to be sent after a download, however u-boot in
+                // particular will only switch to the downloaded firmware if it saw a detach before
+                // a usb reset. So send a detach blindly...
+                //
+                // This matches the behaviour of dfu-util so should be safe
+                let _ = d.detach();
+                println!("Resetting device");
+                d.usb_reset()?;
+            }
         }
 
         Ok(())

@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::marker;
 use thiserror::Error;
 
-pub type Dfu<C> = dfu_core::sync::DfuSync<DfuLibusb<C>, Error>;
+pub type Dfu<C> = dfu_core::synchronous::DfuSync<DfuLibusb<C>, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -163,7 +163,7 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
                     marker: marker::PhantomData,
                 };
 
-                return Ok(dfu_core::sync::DfuSync::new(io));
+                return Ok(Dfu::new(io));
             }
         }
 
