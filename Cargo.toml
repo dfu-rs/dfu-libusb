@@ -20,6 +20,6 @@ thiserror = "2.0.18"
 
 [dev-dependencies]
 anyhow = "1"
-indicatif = "0.16"
+indicatif = "0.18.4"
 simplelog = "0.12"
 clap = { version = "3.2", features = ["derive"] }

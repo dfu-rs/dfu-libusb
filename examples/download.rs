@@ -95,7 +95,7 @@ impl Cli {
                 .template(
                     "{spinner:.green} [{elapsed_precise}] [{bar:27.cyan/blue}] \
                         {bytes}/{total_bytes} ({bytes_per_sec}) ({eta}) {msg:10}",
-                )
+                )?
                 .progress_chars("#>-"),
         );
 
