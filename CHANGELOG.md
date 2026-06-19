@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-06-19
+
+### Fixed
+
+- Handle missing interface strings gracefully instead of panicking (#20)
+
 ## [0.6.1] - 2026-05-05
 
 ### Fixed
@@ -95,7 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/dfu-rs/dfu-libusb/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/dfu-rs/dfu-libusb/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/dfu-rs/dfu-libusb/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/dfu-rs/dfu-libusb/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/dfu-rs/dfu-libusb/compare/v0.5.5...v0.6.0
 [0.5.5]: https://github.com/dfu-rs/dfu-libusb/compare/v0.5.4...v0.5.5
