@@ -150,7 +150,10 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
                     .find(|x| x.setting_number() == alt)
                     .ok_or(Error::InvalidAlt)?;
 
-                let interface_string = handle.read_interface_string(*lang, &iface_desc, timeout)?;
+                let interface_string = match iface_desc.description_string_index() {
+                    None => String::new(),
+                    Some(_) => handle.read_interface_string(*lang, &iface_desc, timeout)?,
+                };
                 let protocol = dfu_core::DfuProtocol::new(
                     &interface_string,
                     functional_descriptor.dfu_version,
