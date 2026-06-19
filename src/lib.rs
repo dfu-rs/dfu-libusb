@@ -151,10 +151,9 @@ impl<C: rusb::UsbContext> DfuLibusb<C> {
                     .ok_or(Error::InvalidAlt)?;
 
                 let interface_string =
-                    match handle.read_interface_string(*lang, &iface_desc, timeout) {
-                        Ok(interface_string) => interface_string,
-                        Err(rusb::Error::InvalidParam) => String::new(),
-                        Err(err) => return Err(err.into()),
+                    match iface_desc.description_string_index() {
+                        None => String::new(),
+                        Some(_) => handle.read_interface_string(*lang, &iface_desc, timeout)?,
                     };
                 let protocol = dfu_core::DfuProtocol::new(
                     &interface_string,
